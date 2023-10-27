@@ -34,6 +34,7 @@ class TetrisLogic(val randomGen: RandomGenerator,
       screen(y)(x) = false
     }
   }
+   screen(5)(5) = true
 
   object AddressStack {
     // Define the stack
@@ -111,14 +112,20 @@ class TetrisLogic(val randomGen: RandomGenerator,
 
   def step(): Unit = {
     val instruction = fetch()
+
+    val firstNibble = (instruction & 0xF000) >> 12
     val x = (instruction & 0x0F00) >> 8 // Extract X
     val y = (instruction & 0x00F0) >> 4 // Extract Y
     val n = instruction & 0x000F // Extract N
     val nn = instruction & 0x00FF // Extract NN
     val nnn = instruction & 0x0FFF // Extract NNN
 
-    instruction match {
-      case 0x00E0 => resetScreen()
+    firstNibble match {
+      case 0x0 => {
+        nnn match {
+          case 0x0E0 => resetScreen()
+        }
+      }
     }
   }
 
