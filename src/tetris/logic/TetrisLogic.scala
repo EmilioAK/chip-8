@@ -25,6 +25,16 @@ class TetrisLogic(val randomGen: RandomGenerator,
   def this() =
     this(new ScalaRandomGen(), DefaultDims, makeEmptyBoard(DefaultDims))
 
+  private val screen = Array.ofDim[Boolean](gridDims.height, gridDims.width)
+  def resetScreen(): Unit = {
+    for {
+      y <- 0 until gridDims.height
+      x <- 0 until gridDims.width
+    } {
+      screen(y)(x) = false
+    }
+  }
+
   object AddressStack {
     // Define the stack
     private val stack = mutable.Stack[Int]()
@@ -107,6 +117,9 @@ class TetrisLogic(val randomGen: RandomGenerator,
     val nn = instruction & 0x00FF // Extract NN
     val nnn = instruction & 0x0FFF // Extract NNN
 
+    instruction match {
+      case 0x00E0 => resetScreen()
+    }
   }
 
   step()
@@ -120,7 +133,7 @@ class TetrisLogic(val randomGen: RandomGenerator,
 
   // TODO implement me
   def getCellType(p : Point): CellType = {
-    if (p.x % 2 == 0) return OCell
+    if(screen(p.y)(p.x)) return OCell
     Empty
   }
 }
