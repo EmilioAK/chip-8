@@ -6,6 +6,9 @@ import tetris.logic.TetrisLogic._
 import java.nio.file.{Files, Paths}
 import scala.collection.mutable
 import scala.collection.mutable.Stack
+import scala.util.control.Breaks.break
+import scala.concurrent.duration._
+
 
 
 
@@ -72,6 +75,7 @@ class TetrisLogic(val randomGen: RandomGenerator,
   }
 
   val memory = new Array[Byte](4096)
+  val registers: Array[Byte] = new Array[Byte](16)
   val font: Array[Byte] = {
     val zero: Array[Int] = Array(0xF0, 0x90, 0x90, 0x90, 0xF0)
     val one: Array[Int] = Array(0x20, 0x60, 0x20, 0x20, 0x70)
@@ -102,6 +106,7 @@ class TetrisLogic(val randomGen: RandomGenerator,
     Array.copy(program, 0, memory, 0x200, program.length)
   }
   var programCounter = 512
+  var indexRegister = 0
 
   loadProgramIntoMemory("src/tetris/logic/IBM.ch8")
   def fetch(): Int = {
@@ -126,11 +131,43 @@ class TetrisLogic(val randomGen: RandomGenerator,
           case 0x0E0 => resetScreen()
         }
       }
+      case 0x1 => {
+        programCounter = nnn
+      }
+      case 0x6 => {
+        registers(x) = nn.toByte
+      }
+      case 0x7 => {
+        registers(x) = (registers(x) + nn.toByte).toByte
+      }
+      case 0xA => {
+        indexRegister = nnn
+      }
+      case 0xD => {
+        val xCoordinate = registers(x) % gridDims.width
+        val yCoordinate = registers(y) % gridDims.height
+        registers(0xF) = 0
+        for (row <- 0 until n) {
+          val spriteData = memory(indexRegister + row)
+          for (bit <- 0 until 8) {
+            val mask = 1 << (7 - bit)
+            val spritePixel = (spriteData & mask) != 0
+            val screenPixel = screen(yCoordinate + row)(xCoordinate + bit)
+
+            if (spritePixel && screenPixel) {
+              screen(yCoordinate + row)(xCoordinate + bit) = false
+              registers(0xF) = 1
+            } else if (spritePixel) {
+              screen(yCoordinate + row)(xCoordinate + bit) = true
+            }
+
+            if (xCoordinate + bit >= gridDims.width) break()
+          }
+          if (yCoordinate + row >= gridDims.height) break()
+        }
+      }
     }
   }
-
-  step()
-
 
   // TODO implement me
   def keyPressed(key: Int): Unit = ()
