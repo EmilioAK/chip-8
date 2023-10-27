@@ -99,10 +99,17 @@ class TetrisLogic(val randomGen: RandomGenerator,
     instruction
   }
 
-  var instruction = fetch()
-  println(s"Instruction: $instruction, Hex: 0x${instruction.toHexString.toUpperCase}")
-  instruction = fetch()
-  println(s"Instruction: $instruction, Hex: 0x${instruction.toHexString.toUpperCase}")
+  def step(): Unit = {
+    val instruction = fetch()
+    val x = (instruction & 0x0F00) >> 8 // Extract X
+    val y = (instruction & 0x00F0) >> 4 // Extract Y
+    val n = instruction & 0x000F // Extract N
+    val nn = instruction & 0x00FF // Extract NN
+    val nnn = instruction & 0x0FFF // Extract NNN
+
+  }
+
+  step()
 
 
   // TODO implement me
