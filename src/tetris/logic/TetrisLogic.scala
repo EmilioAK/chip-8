@@ -37,7 +37,6 @@ class TetrisLogic(val randomGen: RandomGenerator,
       screen(y)(x) = false
     }
   }
-   screen(5)(5) = true
 
   object AddressStack {
     // Define the stack
@@ -111,14 +110,14 @@ class TetrisLogic(val randomGen: RandomGenerator,
   var soundTimer: Byte = 0
   var keysPressed = mutable.Queue[Int]()
 
-  loadProgramIntoMemory("src/tetris/logic/bc_test.ch8")
+  loadProgramIntoMemory("src/tetris/logic/br8kout.ch8")
   def fetch(): Int = {
     val instruction = ((memory(programCounter) & 0xFF) << 8) | (memory(programCounter + 1) & 0xFF) // Promote bytes to int before bitwise operations
     programCounter += 2 // Increment the program counter to the next instruction
     instruction
   }
 
-  def step(): Unit = {
+  def step(): Unit = {//TODO: Keypresses dont seem to work
       val instruction = fetch()
       if (delayTimer > 0) delayTimer = (delayTimer - 1).toByte
       if (soundTimer > 0) soundTimer = (soundTimer - 1).toByte
@@ -209,26 +208,24 @@ class TetrisLogic(val randomGen: RandomGenerator,
           registers(x) = (randomValue & nn).toByte
         }
         case 0xD => {
-          val xCoordinate = registers(x) % gridDims.width
-          val yCoordinate = registers(y) % gridDims.height
+          val xCoordinate = (registers(x) & 0xFF) % gridDims.width
+          val yCoordinate = (registers(y) & 0xFF) % gridDims.height
           registers(0xF) = 0
           for (row <- 0 until n) {
             val spriteData = memory(indexRegister + row)
             for (bit <- 0 until 8) {
               val mask = 1 << (7 - bit)
               val spritePixel = (spriteData & mask) != 0
-              val screenPixel = screen(yCoordinate + row)(xCoordinate + bit)
-
-              if (spritePixel && screenPixel) {
-                screen(yCoordinate + row)(xCoordinate + bit) = false
-                registers(0xF) = 1
-              } else if (spritePixel) {
-                screen(yCoordinate + row)(xCoordinate + bit) = true
+              if (xCoordinate + bit < gridDims.width && yCoordinate + row < gridDims.height) {
+                val screenPixel = screen(yCoordinate + row)(xCoordinate + bit)
+                if (spritePixel && screenPixel) {
+                  screen(yCoordinate + row)(xCoordinate + bit) = false
+                  registers(0xF) = 1
+                } else if (spritePixel) {
+                  screen(yCoordinate + row)(xCoordinate + bit) = true
+                }
               }
-
-              if (xCoordinate + bit >= gridDims.width) break()
             }
-            if (yCoordinate + row >= gridDims.height) break()
           }
         }
         case 0xE => {
