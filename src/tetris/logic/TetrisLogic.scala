@@ -111,7 +111,7 @@ class TetrisLogic(val randomGen: RandomGenerator,
   var soundTimer: Byte = 0
   var keysPressed = mutable.Queue[Int]()
 
-  loadProgramIntoMemory("src/tetris/logic/IBM.ch8")
+  loadProgramIntoMemory("src/tetris/logic/test_opcode.ch8")
   def fetch(): Int = {
     val instruction = ((memory(programCounter) & 0xFF) << 8) | (memory(programCounter + 1) & 0xFF) // Promote bytes to int before bitwise operations
     programCounter += 2 // Increment the program counter to the next instruction
@@ -152,7 +152,10 @@ class TetrisLogic(val randomGen: RandomGenerator,
             programCounter += 2
           }
         }
-
+        case 0x4 =>
+          if (registers(x) != nn) {
+            programCounter += 2
+          }
         case 0x5 => {
           if (registers(x) == registers(y)) {
             programCounter += 2
