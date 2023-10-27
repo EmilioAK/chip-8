@@ -64,27 +64,11 @@ class TetrisGame extends GameBase {
    * @param event The key press event to handle
    */
   override def keyPressed(event: KeyEvent): Unit = {
+    gameLogic.keyPressed(event.getKeyCode)
+  }
 
-    event.getKeyCode match {
-      case VK_1 => gameLogic.keyPressed(1)
-      case VK_2 => gameLogic.keyPressed(2)
-      case VK_3 => gameLogic.keyPressed(3)
-      case VK_4 => gameLogic.keyPressed(4)
-      case VK_Q => gameLogic.keyPressed(5)
-      case VK_W => gameLogic.keyPressed(6)
-      case VK_E => gameLogic.keyPressed(7)
-      case VK_R => gameLogic.keyPressed(8)
-      case VK_A => gameLogic.keyPressed(9)
-      case VK_S => gameLogic.keyPressed(0xA)
-      case VK_D => gameLogic.keyPressed(0xB)
-      case VK_F => gameLogic.keyPressed(0xC)
-      case VK_Z => gameLogic.keyPressed(0xD)
-      case VK_X => gameLogic.keyPressed(0xE)
-      case VK_C => gameLogic.keyPressed(0xF)
-      case VK_V => gameLogic.keyPressed(0x10)
-      case _        => ()
-    }
-
+  override def keyReleased(event: KeyEvent): Unit = {
+    gameLogic.keyReleased(event.getKeyCode)
   }
 
   override def settings(): Unit = {

@@ -8,7 +8,7 @@ import scala.collection.mutable
 import scala.collection.mutable.Stack
 import scala.util.control.Breaks.break
 import scala.concurrent.duration._
-
+import processing.event.KeyEvent
 
 
 
@@ -107,6 +107,9 @@ class TetrisLogic(val randomGen: RandomGenerator,
   }
   var programCounter = 512
   var indexRegister = 0
+  var delayTimer: Byte = 0
+  var soundTimer: Byte = 0
+  var keysPressed = mutable.Queue[Int]()
 
   loadProgramIntoMemory("src/tetris/logic/IBM.ch8")
   def fetch(): Int = {
@@ -116,61 +119,189 @@ class TetrisLogic(val randomGen: RandomGenerator,
   }
 
   def step(): Unit = {
-    val instruction = fetch()
+      val instruction = fetch()
+      if (delayTimer > 0) delayTimer = (delayTimer - 1).toByte
+      if (soundTimer > 0) soundTimer = (soundTimer - 1).toByte
 
-    val firstNibble = (instruction & 0xF000) >> 12
-    val x = (instruction & 0x0F00) >> 8 // Extract X
-    val y = (instruction & 0x00F0) >> 4 // Extract Y
-    val n = instruction & 0x000F // Extract N
-    val nn = instruction & 0x00FF // Extract NN
-    val nnn = instruction & 0x0FFF // Extract NNN
+      val firstNibble = (instruction & 0xF000) >> 12
+      val x = (instruction & 0x0F00) >> 8 // Extract X
+      val y = (instruction & 0x00F0) >> 4 // Extract Y
+      val n = instruction & 0x000F // Extract N
+      val nn = instruction & 0x00FF // Extract NN
+      val nnn = instruction & 0x0FFF // Extract NNN
 
-    firstNibble match {
-      case 0x0 => {
-        nnn match {
-          case 0x0E0 => resetScreen()
-        }
-      }
-      case 0x1 => {
-        programCounter = nnn
-      }
-      case 0x6 => {
-        registers(x) = nn.toByte
-      }
-      case 0x7 => {
-        registers(x) = (registers(x) + nn.toByte).toByte
-      }
-      case 0xA => {
-        indexRegister = nnn
-      }
-      case 0xD => {
-        val xCoordinate = registers(x) % gridDims.width
-        val yCoordinate = registers(y) % gridDims.height
-        registers(0xF) = 0
-        for (row <- 0 until n) {
-          val spriteData = memory(indexRegister + row)
-          for (bit <- 0 until 8) {
-            val mask = 1 << (7 - bit)
-            val spritePixel = (spriteData & mask) != 0
-            val screenPixel = screen(yCoordinate + row)(xCoordinate + bit)
-
-            if (spritePixel && screenPixel) {
-              screen(yCoordinate + row)(xCoordinate + bit) = false
-              registers(0xF) = 1
-            } else if (spritePixel) {
-              screen(yCoordinate + row)(xCoordinate + bit) = true
+      firstNibble match {
+        case 0x0 => {
+          nnn match {
+            case 0x0E0 => resetScreen()
+            case 0x0EE => {
+              programCounter = AddressStack.pop()
             }
-
-            if (xCoordinate + bit >= gridDims.width) break()
           }
-          if (yCoordinate + row >= gridDims.height) break()
+        }
+        case 0x1 => {
+          programCounter = nnn
+        }
+        case 0x2 => {
+          AddressStack.push(programCounter)
+          programCounter = nnn
+        }
+        case 0x3 => {
+          val value = registers(x)
+          if (value == nn) {
+            programCounter += 2
+          }
+        }
+
+        case 0x5 => {
+          if (registers(x) == registers(y)) {
+            programCounter += 2
+          }
+        }
+        case 0x6 => {
+          registers(x) = nn.toByte
+        }
+        case 0x7 => {
+          registers(x) = (registers(x) + nn.toByte).toByte
+        }
+        case 0x8 =>
+          n match {
+            case 0x0 => registers(x) = registers(y)
+            case 0x1 => registers(x) = (registers(x) | registers(y)).toByte
+            case 0x2 => registers(x) = (registers(x) & registers(y)).toByte
+            case 0x3 => registers(x) = (registers(x) ^ registers(y)).toByte
+            case 0x4 => {
+              val sum = registers(x) + registers(y)
+              registers(x) = sum.toByte
+              registers(0xF) = if (sum > 0xFF) 1 else 0
+            }
+            case 0x5 => {
+              registers(0xF) = if (registers(x) > registers(y)) 1 else 0
+              registers(x) = (registers(x) - registers(y)).toByte
+            }
+            case 0x7 => {
+              registers(0xF) = if (registers(y) > registers(x)) 1 else 0
+              registers(x) = (registers(y) - registers(x)).toByte
+            }
+            case 0xE =>
+              registers(0xF) = ((registers(x) & 0x80) >> 7).toByte
+              registers(x) = (registers(x) << 1).toByte
+            case 0x6 =>
+              registers(0xF) = (registers(x) & 0x1).toByte
+              registers(x) = (registers(x) >> 1).toByte
+          }
+        case 0x9 => {
+          if (registers(x) != registers(y)) {
+            programCounter += 2
+          }
+        }
+        case 0xA => {
+          indexRegister = nnn
+        }
+        case 0xB => {
+          programCounter = nnn + registers(0)
+        }
+        case 0xC => {
+          val randomValue = scala.util.Random.nextInt(256)
+          registers(x) = (randomValue & nn).toByte
+        }
+        case 0xD => {
+          val xCoordinate = registers(x) % gridDims.width
+          val yCoordinate = registers(y) % gridDims.height
+          registers(0xF) = 0
+          for (row <- 0 until n) {
+            val spriteData = memory(indexRegister + row)
+            for (bit <- 0 until 8) {
+              val mask = 1 << (7 - bit)
+              val spritePixel = (spriteData & mask) != 0
+              val screenPixel = screen(yCoordinate + row)(xCoordinate + bit)
+
+              if (spritePixel && screenPixel) {
+                screen(yCoordinate + row)(xCoordinate + bit) = false
+                registers(0xF) = 1
+              } else if (spritePixel) {
+                screen(yCoordinate + row)(xCoordinate + bit) = true
+              }
+
+              if (xCoordinate + bit >= gridDims.width) break()
+            }
+            if (yCoordinate + row >= gridDims.height) break()
+          }
+        }
+        case 0xE => {
+          nn match {
+            case 0x9E => if (isKeyPressed(registers(x).toInt)) programCounter += 2
+            case 0xA1 => if (!isKeyPressed(registers(x).toInt)) programCounter += 2
+          }
+        }
+        case 0xF => {
+          nn match {
+            case 0x07 => registers(x) = delayTimer
+            case 0x15 => delayTimer = registers(x)
+            case 0x18 => soundTimer = registers(x)
+            case 0x1E =>
+              val sum = indexRegister + registers(x)
+              indexRegister = sum & 0xFFF // Ensure the index register wraps around
+              registers(0xF) = if (sum > 0xFFF) 1.toByte else 0.toByte
+            case 0x0A =>
+              if(keysPressed.isEmpty) {
+                programCounter -= 2
+              } else {
+                val key = keysPressed.dequeue() // Get and remove the first element from the queue
+                registers(x) = mapProcessingKeyToChip8Key(key.toChar).toByte
+              }
+            case 0x29 => indexRegister = registers(x) * 5 + 0x50
+            case 0x33 =>
+              val value = registers(x)
+              memory(indexRegister) = (value / 100).toByte // Hundreds place
+              memory(indexRegister + 1) = ((value % 100) / 10).toByte // Tens place
+              memory(indexRegister + 2) = (value % 10).toByte // Ones place
+            case 0x55 =>
+              Array.copy(registers, 0, memory, indexRegister, x + 1)
+
+            case 0x65 =>
+              Array.copy(memory, indexRegister, registers, 0, x + 1)
+          }
         }
       }
     }
-  }
 
   // TODO implement me
-  def keyPressed(key: Int): Unit = ()
+
+  def mapProcessingKeyToChip8Key(key: Char): Int = {
+    key match {
+      case '1' => 0x1
+      case '2' => 0x2
+      case '3' => 0x3
+      case '4' => 0xC
+      case 'q' | 'Q' => 0x4
+      case 'w' | 'W' => 0x5
+      case 'e' | 'E' => 0x6
+      case 'r' | 'R' => 0xD
+      case 'a' | 'A' => 0x7
+      case 's' | 'S' => 0x8
+      case 'd' | 'D' => 0x9
+      case 'f' | 'F' => 0xE
+      case 'z' | 'Z' => 0xA
+      case 'x' | 'X' => 0x0
+      case 'c' | 'C' => 0xB
+      case 'v' | 'V' => 0xF
+      case _ => -1  // Indicates an unsupported key
+    }
+  }
+
+  def isKeyPressed(chip8Key: Int): Boolean = {
+    val mappedKey = mapProcessingKeyToChip8Key(chip8Key.toChar)
+    keysPressed.contains(mappedKey)
+  }
+
+  def keyPressed(key: Int): Unit = {
+    keysPressed.enqueue(key)
+  }
+
+  def keyReleased(key: Int): Unit = {
+    keysPressed = keysPressed.filter(_ != key)
+  }
 
   // TODO implement me
   def isGameOver: Boolean = false
