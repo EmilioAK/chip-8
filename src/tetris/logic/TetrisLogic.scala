@@ -111,7 +111,7 @@ class TetrisLogic(val randomGen: RandomGenerator,
   var soundTimer: Char = 0
   var keysPressed = mutable.Queue[Char]()
 
-  loadProgramIntoMemory("src/tetris/logic/5-quirks.ch8")
+  loadProgramIntoMemory("src/tetris/logic/6-keypad.ch8")
 
   def fetch(): Int = {
     val instruction = ((memory(programCounter).toInt & 0xFF) << 8) | (memory(programCounter + 1).toInt & 0xFF)
@@ -283,23 +283,23 @@ class TetrisLogic(val randomGen: RandomGenerator,
 
   // TODO implement me
 
-  val mapProcessingKeyToChip8Key: Map[Char, Char] = Map(
-    '1' -> 0x1,
-    '2' -> 0x2,
-    '3' -> 0x3,
-    '4' -> 0xC,
-    'q' -> 0x4,
-    'w' -> 0x5,
-    'e' -> 0x6,
-    'r' -> 0xD,
-    'a' -> 0x7,
-    's' -> 0x8,
-    'd' -> 0x9,
-    'f' -> 0xE,
-    'z' -> 0xA,
-    'x' -> 0x0,
-    'c' -> 0xB,
-    'v' -> 0xF,
+  val mapProcessingKeyToChip8Key: Map[Int, Char] = Map(
+    49 -> 0x1,  // '1'
+    50 -> 0x2,  // '2'
+    51 -> 0x3,  // '3'
+    52 -> 0xC,  // '4'
+    81 -> 0x4,  // 'q'
+    87 -> 0x5,  // 'w'
+    69 -> 0x6,  // 'e'
+    82 -> 0xD,  // 'r'
+    65 -> 0x7,  // 'a'
+    83 -> 0x8,  // 's'
+    68 -> 0x9,  // 'd'
+    70 -> 0xE,  // 'f'
+    90 -> 0xA,  // 'z'
+    88 -> 0x0,  // 'x'
+    67 -> 0xB,  // 'c'
+    86 -> 0xF   // 'v'
   )
 
   def keyPressed(key: Int): Unit = {
