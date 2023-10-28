@@ -109,7 +109,7 @@ class TetrisLogic(val randomGen: RandomGenerator,
   var indexRegister = 0
   var keysPressed = mutable.Queue[Char]()
 
-  loadProgramIntoMemory("src/tetris/logic/6-keypad.ch8")
+  loadProgramIntoMemory("src/tetris/logic/BRIX")
 
   def fetch(): Int = {
     val instruction = ((memory(programCounter).toInt & 0xFF) << 8) | (memory(programCounter + 1).toInt & 0xFF)

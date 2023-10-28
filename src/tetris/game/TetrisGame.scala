@@ -12,6 +12,7 @@ import processing.event.KeyEvent
 import tetris.logic._
 import tetris.game.TetrisGame._
 import tetris.logic.{Point => GridPoint}
+import ddf.minim._
 
 import scala.collection.mutable
 
@@ -24,12 +25,28 @@ class TetrisGame extends GameBase {
   val heightInPixels: Int = (HeightCellInPixels * gridDims.height).ceil.toInt
   val screenArea: Rectangle = Rectangle(Point(0, 0), widthInPixels.toFloat, heightInPixels.toFloat)
   var timers = mutable.Map[String, Char]("delayTimer" -> 0, "soundTimer" -> 0)
+  val delayDisplay: Boolean = false
+  var minim: Minim = _
+  var player: AudioPlayer = _
 
   override def draw(): Unit = {
     updateState()
     runStep()
     drawGrid()
+    handleSound()
     if (gameLogic.isGameOver) drawGameOverScreen()
+  }
+
+  def handleSound(): Unit = {
+    if (timers("soundTimer") > 0) {
+      if (!player.isPlaying) {
+        player.rewind()
+        player.play()
+      }
+    } else {
+      player.pause()
+      player.rewind()
+    }
   }
 
   def runStep(): Unit = {
@@ -39,7 +56,7 @@ class TetrisGame extends GameBase {
     }
 
     for (i <- 0 until TetrisLogic.ClockSpeed / TetrisLogic.FramesPerSecond) {
-      if (drawInstructionExecuted) return
+      if (drawInstructionExecuted && delayDisplay) return
 
       val (newTimers, newDrawInstructionExecuted) = gameLogic.step(timers)
       timers = newTimers
@@ -105,6 +122,9 @@ class TetrisGame extends GameBase {
     // This should be called last, since the game
     // clock is officially ticking at this point
     updateTimer.init()
+
+    minim = new Minim(this)
+    player = minim.loadFile("src/tetris/logic/beep.wav")
   }
 
   def updateState(): Unit = {
