@@ -73,9 +73,9 @@ class TetrisLogic(val randomGen: RandomGenerator,
     def isEmpty: Boolean = stack.isEmpty
   }
 
-  val memory = new Array[Byte](4096)
-  val registers: Array[Byte] = new Array[Byte](16)
-  val font: Array[Byte] = {
+  val memory = new Array[Char](4096)
+  val registers: Array[Char] = new Array[Char](16)
+  val font: Array[Char] = {
     val zero: Array[Int] = Array(0xF0, 0x90, 0x90, 0x90, 0xF0)
     val one: Array[Int] = Array(0x20, 0x60, 0x20, 0x20, 0x70)
     val two: Array[Int] = Array(0xF0, 0x10, 0xF0, 0x80, 0xF0)
@@ -93,7 +93,7 @@ class TetrisLogic(val randomGen: RandomGenerator,
     val E: Array[Int] = Array(0xF0, 0x80, 0xF0, 0x80, 0xF0)
     val F: Array[Int] = Array(0xF0, 0x80, 0xF0, 0x80, 0x80)
 
-    (zero ++ one ++ two ++ three ++ four ++ five ++ six ++ seven ++ eight ++ nine ++ A ++ B ++ C ++ D ++ E ++ F).map(_.toByte)
+    (zero ++ one ++ two ++ three ++ four ++ five ++ six ++ seven ++ eight ++ nine ++ A ++ B ++ C ++ D ++ E ++ F).map(_.toChar)
   }
 
 
@@ -102,25 +102,28 @@ class TetrisLogic(val randomGen: RandomGenerator,
 
   def loadProgramIntoMemory(filePath: String): Unit = {
     val program = Files.readAllBytes(Paths.get(filePath))
-    Array.copy(program, 0, memory, 0x200, program.length)
+    Array.copy(program.map(b => (b & 0xFF).toChar), 0, memory, 0x200, program.length)
   }
+
   var programCounter = 512
   var indexRegister = 0
-  var delayTimer: Byte = 0
-  var soundTimer: Byte = 0
+  var delayTimer: Char = 0
+  var soundTimer: Char = 0
   var keysPressed = mutable.Queue[Int]()
 
-  loadProgramIntoMemory("src/tetris/logic/br8kout.ch8")
+  loadProgramIntoMemory("src/tetris/logic/3-corax+.ch8")
+
   def fetch(): Int = {
-    val instruction = ((memory(programCounter) & 0xFF) << 8) | (memory(programCounter + 1) & 0xFF) // Promote bytes to int before bitwise operations
-    programCounter += 2 // Increment the program counter to the next instruction
+    val instruction = ((memory(programCounter).toInt & 0xFF) << 8) | (memory(programCounter + 1).toInt & 0xFF)
+    programCounter += 2
     instruction
   }
 
+
   def step(): Unit = {//TODO: Keypresses dont seem to work
-      val instruction = fetch()
-      if (delayTimer > 0) delayTimer = (delayTimer - 1).toByte
-      if (soundTimer > 0) soundTimer = (soundTimer - 1).toByte
+    val instruction = fetch()
+    if (delayTimer > 0) delayTimer = (delayTimer - 1).toChar
+    if (soundTimer > 0) soundTimer = (soundTimer - 1).toChar
 
       val firstNibble = (instruction & 0xF000) >> 12
       val x = (instruction & 0x0F00) >> 8 // Extract X
@@ -161,36 +164,39 @@ class TetrisLogic(val randomGen: RandomGenerator,
           }
         }
         case 0x6 => {
-          registers(x) = nn.toByte
+          registers(x) = nn.toChar
         }
         case 0x7 => {
-          registers(x) = (registers(x) + nn.toByte).toByte
+          registers(x) = ((registers(x) + nn) & 0xFF).toChar
         }
         case 0x8 =>
           n match {
             case 0x0 => registers(x) = registers(y)
-            case 0x1 => registers(x) = (registers(x) | registers(y)).toByte
-            case 0x2 => registers(x) = (registers(x) & registers(y)).toByte
-            case 0x3 => registers(x) = (registers(x) ^ registers(y)).toByte
+            case 0x1 => registers(x) = (registers(x) | registers(y)).toChar
+            case 0x2 => registers(x) = (registers(x) & registers(y)).toChar
+            case 0x3 => registers(x) = (registers(x) ^ registers(y)).toChar
             case 0x4 => {
-              val sum = registers(x) + registers(y)
-              registers(x) = sum.toByte
-              registers(0xF) = if (sum > 0xFF) 1 else 0
+              val flag: Char = if (registers(x) > registers(y)) 1 else 0
+              registers(x) = ((registers(x) + registers(y)) & 0xFF).toChar
+              registers(0xF) = flag
             }
             case 0x5 => {
-              registers(0xF) = if (registers(x) > registers(y)) 1 else 0
-              registers(x) = (registers(x) - registers(y)).toByte
+              val flag: Char = if (registers(x) > registers(y)) 1 else 0
+              registers(x) = ((registers(x) - registers(y)) & 0xFF).toChar
+              registers(0xF) = flag
             }
             case 0x7 => {
-              registers(0xF) = if (registers(y) > registers(x)) 1 else 0
-              registers(x) = (registers(y) - registers(x)).toByte
+              val flag: Char = if (registers(y) > registers(x)) 1 else 0
+              registers(x) = ((registers(y) - registers(x)) & 0xFF).toChar
+              registers(0xF) = flag
             }
             case 0xE =>
-              registers(0xF) = ((registers(x) & 0x80) >> 7).toByte
-              registers(x) = (registers(x) << 1).toByte
+              val flag: Char = (((registers(x).toInt & 0x80) >> 7) & 0xFF).toChar
+              registers(x) = ((registers(x).toInt << 1) & 0xFF).toChar
+              registers(0xF) = flag
             case 0x6 =>
-              registers(0xF) = (registers(x) & 0x1).toByte
-              registers(x) = (registers(x) >> 1).toByte
+              registers(0xF) = (registers(x) & 0x1).toChar
+              registers(x) = (registers(x) >> 1).toChar
           }
         case 0x9 => {
           if (registers(x) != registers(y)) {
@@ -205,7 +211,7 @@ class TetrisLogic(val randomGen: RandomGenerator,
         }
         case 0xC => {
           val randomValue = scala.util.Random.nextInt(256)
-          registers(x) = (randomValue & nn).toByte
+          registers(x) = (randomValue & nn).toChar
         }
         case 0xD => {
           val xCoordinate = (registers(x) & 0xFF) % gridDims.width
@@ -240,22 +246,22 @@ class TetrisLogic(val randomGen: RandomGenerator,
             case 0x15 => delayTimer = registers(x)
             case 0x18 => soundTimer = registers(x)
             case 0x1E =>
-              val sum = indexRegister + registers(x)
-              indexRegister = sum & 0xFFF // Ensure the index register wraps around
-              registers(0xF) = if (sum > 0xFFF) 1.toByte else 0.toByte
+              val sum = indexRegister + registers(x).toInt
+              indexRegister = sum & 0xFFF  // Ensure the index register wraps around
+              registers(0xF) = if (sum > 0xFFF) 1.toChar else 0.toChar
             case 0x0A =>
               if(keysPressed.isEmpty) {
                 programCounter -= 2
               } else {
                 val key = keysPressed.dequeue() // Get and remove the first element from the queue
-                registers(x) = mapProcessingKeyToChip8Key(key.toChar).toByte
+                registers(x) = mapProcessingKeyToChip8Key(key.toChar).toChar
               }
             case 0x29 => indexRegister = registers(x) * 5 + 0x50
             case 0x33 =>
               val value = registers(x) & 0xFF
-              memory(indexRegister) = (value / 100).toByte // Hundreds place
-              memory(indexRegister + 1) = ((value % 100) / 10).toByte // Tens place
-              memory(indexRegister + 2) = (value % 10).toByte // Ones place
+              memory(indexRegister) = (value / 100).toChar // Hundreds place
+              memory(indexRegister + 1) = ((value % 100) / 10).toChar // Tens place
+              memory(indexRegister + 2) = (value % 10).toChar // Ones place
             case 0x55 =>
               Array.copy(registers, 0, memory, indexRegister, x + 1)
 
