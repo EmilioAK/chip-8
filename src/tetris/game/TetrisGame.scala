@@ -5,7 +5,6 @@ package tetris.game
 
 import java.awt.event
 import java.awt.event.KeyEvent._
-
 import engine.GameBase
 import engine.graphics.{Color, Point, Rectangle}
 import processing.core.{PApplet, PConstants}
@@ -14,14 +13,17 @@ import tetris.logic._
 import tetris.game.TetrisGame._
 import tetris.logic.{Point => GridPoint}
 
+import scala.collection.mutable
+
 class TetrisGame extends GameBase {
 
-  var gameLogic : TetrisLogic = TetrisLogic()
+  var gameLogic: TetrisLogic = TetrisLogic()
   val updateTimer = new UpdateTimer(TetrisLogic.FramesPerSecond.toFloat)
-  val gridDims : Dimensions = gameLogic.gridDims
+  val gridDims: Dimensions = gameLogic.gridDims
   val widthInPixels: Int = (WidthCellInPixels * gridDims.width).ceil.toInt
   val heightInPixels: Int = (HeightCellInPixels * gridDims.height).ceil.toInt
   val screenArea: Rectangle = Rectangle(Point(0, 0), widthInPixels.toFloat, heightInPixels.toFloat)
+  var timers = mutable.Map[String, Char]("delayTimer" -> 0, "soundTimer" -> 0)
 
   override def draw(): Unit = {
     updateState()
@@ -31,10 +33,15 @@ class TetrisGame extends GameBase {
   }
 
   def runStep(): Unit = {
+    timers.keys.foreach { timer =>
+      if (timers(timer) > 0) timers(timer) = (timers(timer) - 1).toChar
+    }
+
     for (i <- 0 until TetrisLogic.ClockSpeed / TetrisLogic.FramesPerSecond) {
-      gameLogic.step()
+      timers = gameLogic.step(timers)
     }
   }
+
   def drawGameOverScreen(): Unit = {
     setFillColor(Color.Red)
     drawTextCentered("GAME OVER!", 20, screenArea.center)
@@ -49,7 +56,7 @@ class TetrisGame extends GameBase {
       drawCell(getCell(p), gameLogic.getCellType(p))
     }
 
-    def getCell(p : GridPoint): Rectangle = {
+    def getCell(p: GridPoint): Rectangle = {
       val leftUp = Point(screenArea.left + p.x * widthPerCell,
         screenArea.top + p.y * heightPerCell)
       Rectangle(leftUp, widthPerCell, heightPerCell)
@@ -107,7 +114,7 @@ class TetrisGame extends GameBase {
       case LCell => Color.Orange
       case JCell => Color.Blue
       case SCell => Color.Green
-      case Empty  => Color.Black
+      case Empty => Color.Black
       case TCell => Color.Purple
       case ZCell => Color.Red
     }
@@ -119,7 +126,7 @@ object TetrisGame {
   val WidthCellInPixels: Double = 15 * TetrisLogic.DrawSizeFactor
   val HeightCellInPixels: Double = WidthCellInPixels
 
-  def main(args:Array[String]): Unit = {
+  def main(args: Array[String]): Unit = {
     PApplet.main("tetris.game.TetrisGame")
   }
 

@@ -107,11 +107,9 @@ class TetrisLogic(val randomGen: RandomGenerator,
 
   var programCounter = 512
   var indexRegister = 0
-  var delayTimer: Char = 0
-  var soundTimer: Char = 0
   var keysPressed = mutable.Queue[Char]()
 
-  loadProgramIntoMemory("src/tetris/logic/6-keypad.ch8")
+  loadProgramIntoMemory("src/tetris/logic/5-quirks.ch8")
 
   def fetch(): Int = {
     val instruction = ((memory(programCounter).toInt & 0xFF) << 8) | (memory(programCounter + 1).toInt & 0xFF)
@@ -120,11 +118,8 @@ class TetrisLogic(val randomGen: RandomGenerator,
   }
 
 
-  def step(): Unit = {//TODO: Keypresses dont seem to work
+  def step(timers: mutable.Map[String, Char]): mutable.Map[String, Char] = {
     val instruction = fetch()
-    if (delayTimer > 0) delayTimer = (delayTimer - 1).toChar
-    if (soundTimer > 0) soundTimer = (soundTimer - 1).toChar
-
       val firstNibble = (instruction & 0xF000) >> 12
       val x = (instruction & 0x0F00) >> 8 // Extract X
       val y = (instruction & 0x00F0) >> 4 // Extract Y
@@ -251,9 +246,9 @@ class TetrisLogic(val randomGen: RandomGenerator,
         }
         case 0xF => {
           nn match {
-            case 0x07 => registers(x) = delayTimer
-            case 0x15 => delayTimer = registers(x)
-            case 0x18 => soundTimer = registers(x)
+            case 0x07 => registers(x) = timers("delayTimer")
+            case 0x15 => timers("delayTimer") = registers(x)
+            case 0x18 => timers("soundTimer") = registers(x)
             case 0x1E =>
               val sum = indexRegister + registers(x).toInt
               indexRegister = sum & 0xFFF  // Ensure the index register wraps around
@@ -279,6 +274,7 @@ class TetrisLogic(val randomGen: RandomGenerator,
           }
         }
       }
+      timers
     }
 
   // TODO implement me
