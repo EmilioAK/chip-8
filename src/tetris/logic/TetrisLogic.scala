@@ -328,7 +328,7 @@ class TetrisLogic(val randomGen: RandomGenerator,
 }
 
 object TetrisLogic {
-  val ClockSpeed: Int = 1200
+  val ClockSpeed: Int = 700
 
   val FramesPerSecond: Int = 60 // change this to speed up or slow down the game
 
