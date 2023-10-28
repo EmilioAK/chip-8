@@ -109,7 +109,7 @@ class TetrisLogic(val randomGen: RandomGenerator,
   var indexRegister = 0
   var keysPressed = mutable.Queue[Char]()
 
-  loadProgramIntoMemory("src/tetris/logic/5-quirks.ch8")
+  loadProgramIntoMemory("src/tetris/logic/6-keypad.ch8")
 
   def fetch(): Int = {
     val instruction = ((memory(programCounter).toInt & 0xFF) << 8) | (memory(programCounter + 1).toInt & 0xFF)
@@ -118,7 +118,7 @@ class TetrisLogic(val randomGen: RandomGenerator,
   }
 
 
-  def step(timers: mutable.Map[String, Char]): mutable.Map[String, Char] = {
+  def step(timers: mutable.Map[String, Char]): (mutable.Map[String, Char], Boolean) = {
     val instruction = fetch()
       val firstNibble = (instruction & 0xF000) >> 12
       val x = (instruction & 0x0F00) >> 8 // Extract X
@@ -237,6 +237,7 @@ class TetrisLogic(val randomGen: RandomGenerator,
               }
             }
           }
+          return (timers, true)
         }
         case 0xE => {
           nn match {
@@ -274,7 +275,7 @@ class TetrisLogic(val randomGen: RandomGenerator,
           }
         }
       }
-      timers
+    (timers, false)
     }
 
   // TODO implement me

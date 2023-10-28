@@ -33,12 +33,18 @@ class TetrisGame extends GameBase {
   }
 
   def runStep(): Unit = {
+    var drawInstructionExecuted: Boolean = false
     timers.keys.foreach { timer =>
       if (timers(timer) > 0) timers(timer) = (timers(timer) - 1).toChar
     }
 
     for (i <- 0 until TetrisLogic.ClockSpeed / TetrisLogic.FramesPerSecond) {
-      timers = gameLogic.step(timers)
+      if (drawInstructionExecuted) return
+
+      val (newTimers, newDrawInstructionExecuted) = gameLogic.step(timers)
+      timers = newTimers
+      drawInstructionExecuted = newDrawInstructionExecuted
+
     }
   }
 
