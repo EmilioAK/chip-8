@@ -111,7 +111,7 @@ class TetrisLogic(val randomGen: RandomGenerator,
   var soundTimer: Char = 0
   var keysPressed = mutable.Queue[Char]()
 
-  loadProgramIntoMemory("src/tetris/logic/octojam2title.ch8")
+  loadProgramIntoMemory("src/tetris/logic/5-quirks.ch8")
 
   def fetch(): Int = {
     val instruction = ((memory(programCounter).toInt & 0xFF) << 8) | (memory(programCounter + 1).toInt & 0xFF)
@@ -172,9 +172,15 @@ class TetrisLogic(val randomGen: RandomGenerator,
         case 0x8 =>
           n match {
             case 0x0 => registers(x) = registers(y)
-            case 0x1 => registers(x) = (registers(x) | registers(y)).toChar
-            case 0x2 => registers(x) = (registers(x) & registers(y)).toChar
-            case 0x3 => registers(x) = (registers(x) ^ registers(y)).toChar
+            case 0x1 =>
+              registers(x) = (registers(x) | registers(y)).toChar
+              registers(0xF) = 0.toChar
+            case 0x2 =>
+              registers(x) = (registers(x) & registers(y)).toChar
+              registers(0xF) = 0.toChar
+            case 0x3 =>
+              registers(x) = (registers(x) ^ registers(y)).toChar
+              registers(0xF) = 0.toChar
             case 0x4 => {
               val flag: Char = if (registers(x) + registers(y) > 255) 1 else 0
               registers(x) = ((registers(x) + registers(y)) & 0xFF).toChar
@@ -191,10 +197,12 @@ class TetrisLogic(val randomGen: RandomGenerator,
               registers(0xF) = flag
             }
             case 0xE =>
+              registers(x) = registers(y) // Set VX to the value of VY
               val flag: Char = (((registers(x).toInt & 0x80) >> 7) & 0xFF).toChar
               registers(x) = ((registers(x).toInt << 1) & 0xFF).toChar
               registers(0xF) = flag
             case 0x6 =>
+              registers(x) = registers(y) // Set VX to the value of VY
               val flag: Char = (registers(x) & 0x1).toChar
               registers(x) = (registers(x) >> 1).toChar
               registers(0xF) = flag
@@ -264,9 +272,10 @@ class TetrisLogic(val randomGen: RandomGenerator,
               memory(indexRegister + 2) = (value % 10).toChar // Ones place
             case 0x55 =>
               Array.copy(registers, 0, memory, indexRegister, x + 1)
-
+              indexRegister += (x + 1) // Increment the index register
             case 0x65 =>
               Array.copy(memory, indexRegister, registers, 0, x + 1)
+              indexRegister += (x + 1) // Increment the index register
           }
         }
       }
@@ -319,7 +328,7 @@ class TetrisLogic(val randomGen: RandomGenerator,
 }
 
 object TetrisLogic {
-  val ClockSpeed: Int = 700
+  val ClockSpeed: Int = 1200
 
   val FramesPerSecond: Int = 60 // change this to speed up or slow down the game
 
