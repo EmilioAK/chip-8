@@ -111,7 +111,7 @@ class TetrisLogic(val randomGen: RandomGenerator,
   var soundTimer: Char = 0
   var keysPressed = mutable.Queue[Int]()
 
-  loadProgramIntoMemory("src/tetris/logic/3-corax+.ch8")
+  loadProgramIntoMemory("src/tetris/logic/4-flags.ch8")
 
   def fetch(): Int = {
     val instruction = ((memory(programCounter).toInt & 0xFF) << 8) | (memory(programCounter + 1).toInt & 0xFF)
@@ -176,7 +176,7 @@ class TetrisLogic(val randomGen: RandomGenerator,
             case 0x2 => registers(x) = (registers(x) & registers(y)).toChar
             case 0x3 => registers(x) = (registers(x) ^ registers(y)).toChar
             case 0x4 => {
-              val flag: Char = if (registers(x) > registers(y)) 1 else 0
+              val flag: Char = if (registers(x) + registers(y) > 255) 1 else 0
               registers(x) = ((registers(x) + registers(y)) & 0xFF).toChar
               registers(0xF) = flag
             }
@@ -195,8 +195,9 @@ class TetrisLogic(val randomGen: RandomGenerator,
               registers(x) = ((registers(x).toInt << 1) & 0xFF).toChar
               registers(0xF) = flag
             case 0x6 =>
-              registers(0xF) = (registers(x) & 0x1).toChar
+              val flag: Char = (registers(x) & 0x1).toChar
               registers(x) = (registers(x) >> 1).toChar
+              registers(0xF) = flag
           }
         case 0x9 => {
           if (registers(x) != registers(y)) {
