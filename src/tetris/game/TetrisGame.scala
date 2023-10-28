@@ -27,7 +27,7 @@ class TetrisGame extends GameBase {
   var timers = mutable.Map[String, Char]("delayTimer" -> 0, "soundTimer" -> 0)
   val delayDisplay: Boolean = false
   var minim: Minim = _
-  var player: AudioPlayer = _
+  var audioPlayer: AudioPlayer = _
 
   override def draw(): Unit = {
     updateState()
@@ -37,15 +37,18 @@ class TetrisGame extends GameBase {
     if (gameLogic.isGameOver) drawGameOverScreen()
   }
 
+  def setupAudio(soundFile: String): Unit = {
+    minim = new Minim(this)
+    audioPlayer = minim.loadFile(soundFile)
+    audioPlayer.loop()
+    audioPlayer.mute()
+  }
+
   def handleSound(): Unit = {
     if (timers("soundTimer") > 0) {
-      if (!player.isPlaying) {
-        player.rewind()
-        player.play()
-      }
+      audioPlayer.unmute()
     } else {
-      player.pause()
-      player.rewind()
+      audioPlayer.mute()
     }
   }
 
@@ -122,9 +125,7 @@ class TetrisGame extends GameBase {
     // This should be called last, since the game
     // clock is officially ticking at this point
     updateTimer.init()
-
-    minim = new Minim(this)
-    player = minim.loadFile("src/tetris/logic/beep.wav")
+    setupAudio("src/tetris/logic/beep.wav")
   }
 
   def updateState(): Unit = {
