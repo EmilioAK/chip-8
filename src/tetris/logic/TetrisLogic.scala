@@ -181,12 +181,12 @@ class TetrisLogic(val randomGen: RandomGenerator,
               registers(0xF) = flag
             }
             case 0x5 => {
-              val flag: Char = if (registers(x) > registers(y)) 1 else 0
+              val flag: Char = if (registers(x) >= registers(y)) 1 else 0
               registers(x) = ((registers(x) - registers(y)) & 0xFF).toChar
               registers(0xF) = flag
             }
             case 0x7 => {
-              val flag: Char = if (registers(y) > registers(x)) 1 else 0
+              val flag: Char = if (registers(y) >= registers(x)) 1 else 0
               registers(x) = ((registers(y) - registers(x)) & 0xFF).toChar
               registers(0xF) = flag
             }
