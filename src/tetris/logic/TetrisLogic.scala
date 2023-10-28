@@ -109,9 +109,9 @@ class TetrisLogic(val randomGen: RandomGenerator,
   var indexRegister = 0
   var delayTimer: Char = 0
   var soundTimer: Char = 0
-  var keysPressed = mutable.Queue[Int]()
+  var keysPressed = mutable.Queue[Char]()
 
-  loadProgramIntoMemory("src/tetris/logic/4-flags.ch8")
+  loadProgramIntoMemory("src/tetris/logic/octojam2title.ch8")
 
   def fetch(): Int = {
     val instruction = ((memory(programCounter).toInt & 0xFF) << 8) | (memory(programCounter + 1).toInt & 0xFF)
@@ -237,8 +237,8 @@ class TetrisLogic(val randomGen: RandomGenerator,
         }
         case 0xE => {
           nn match {
-            case 0x9E => if (isKeyPressed(registers(x).toInt)) programCounter += 2
-            case 0xA1 => if (!isKeyPressed(registers(x).toInt)) programCounter += 2
+            case 0x9E => if (keysPressed.contains(registers(x))) programCounter += 2
+            case 0xA1 => if (!keysPressed.contains(registers(x))) programCounter += 2
           }
         }
         case 0xF => {
@@ -254,8 +254,7 @@ class TetrisLogic(val randomGen: RandomGenerator,
               if(keysPressed.isEmpty) {
                 programCounter -= 2
               } else {
-                val key = keysPressed.dequeue() // Get and remove the first element from the queue
-                registers(x) = mapProcessingKeyToChip8Key(key.toChar).toChar
+                registers(x) = keysPressed.dequeue()
               }
             case 0x29 => indexRegister = registers(x) * 5 + 0x50
             case 0x33 =>
@@ -275,40 +274,39 @@ class TetrisLogic(val randomGen: RandomGenerator,
 
   // TODO implement me
 
-  def mapProcessingKeyToChip8Key(key: Char): Int = {
-    key match {
-      case '1' => 0x1
-      case '2' => 0x2
-      case '3' => 0x3
-      case '4' => 0xC
-      case 'q' | 'Q' => 0x4
-      case 'w' | 'W' => 0x5
-      case 'e' | 'E' => 0x6
-      case 'r' | 'R' => 0xD
-      case 'a' | 'A' => 0x7
-      case 's' | 'S' => 0x8
-      case 'd' | 'D' => 0x9
-      case 'f' | 'F' => 0xE
-      case 'z' | 'Z' => 0xA
-      case 'x' | 'X' => 0x0
-      case 'c' | 'C' => 0xB
-      case 'v' | 'V' => 0xF
-      case _ => -1  // Indicates an unsupported key
+  val mapProcessingKeyToChip8Key: Map[Char, Char] = Map(
+    '1' -> 0x1,
+    '2' -> 0x2,
+    '3' -> 0x3,
+    '4' -> 0xC,
+    'q' -> 0x4,
+    'w' -> 0x5,
+    'e' -> 0x6,
+    'r' -> 0xD,
+    'a' -> 0x7,
+    's' -> 0x8,
+    'd' -> 0x9,
+    'f' -> 0xE,
+    'z' -> 0xA,
+    'x' -> 0x0,
+    'c' -> 0xB,
+    'v' -> 0xF,
+  )
+
+  def keyPressed(key: Int): Unit = {
+    mapProcessingKeyToChip8Key.get(key.toChar) match {
+      case Some(mappedKey) => keysPressed.enqueue(mappedKey)
+      case None => println(s"$key not found")
     }
   }
 
-  def isKeyPressed(chip8Key: Int): Boolean = {
-    val mappedKey = mapProcessingKeyToChip8Key(chip8Key.toChar)
-    keysPressed.contains(mappedKey)
-  }
-
-  def keyPressed(key: Int): Unit = {
-    keysPressed.enqueue(key)
-  }
-
   def keyReleased(key: Int): Unit = {
-    keysPressed = keysPressed.filter(_ != key)
+    mapProcessingKeyToChip8Key.get(key.toChar) match {
+      case Some(mappedKey) => keysPressed = keysPressed.filter(_ != mappedKey)
+      case None => println(s"$key not found")
+    }
   }
+
 
   // TODO implement me
   def isGameOver: Boolean = false
@@ -321,6 +319,7 @@ class TetrisLogic(val randomGen: RandomGenerator,
 }
 
 object TetrisLogic {
+  val ClockSpeed: Int = 700
 
   val FramesPerSecond: Int = 60 // change this to speed up or slow down the game
 

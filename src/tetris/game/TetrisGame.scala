@@ -25,10 +25,16 @@ class TetrisGame extends GameBase {
 
   override def draw(): Unit = {
     updateState()
+    runStep()
     drawGrid()
     if (gameLogic.isGameOver) drawGameOverScreen()
   }
 
+  def runStep(): Unit = {
+    for (i <- 0 until TetrisLogic.ClockSpeed / TetrisLogic.FramesPerSecond) {
+      gameLogic.step()
+    }
+  }
   def drawGameOverScreen(): Unit = {
     setFillColor(Color.Red)
     drawTextCentered("GAME OVER!", 20, screenArea.center)
@@ -90,7 +96,6 @@ class TetrisGame extends GameBase {
 
   def updateState(): Unit = {
     if (updateTimer.timeForNextFrame()) {
-      gameLogic.step()
       updateTimer.advanceFrame()
     }
   }
