@@ -12,7 +12,7 @@ import scala.collection.mutable
 
 class Chip8Game extends GameBase {
 
-  var gameLogic: Chip8Logic = Chip8Logic()
+  var gameLogic: Chip8Logic = Chip8Logic(getColorScheme("Desert"))
   val updateTimer = new UpdateTimer(Chip8Logic.FramesPerSecond.toFloat)
   val gridDims: Dimensions = gameLogic.gridDims
   val widthInPixels: Int = (WidthCellInPixels * gridDims.width).ceil.toInt
@@ -75,8 +75,7 @@ class Chip8Game extends GameBase {
       Rectangle(leftUp, widthPerCell, heightPerCell)
     }
 
-    def drawCell(area: Rectangle, tetrisColor: CellType): Unit = {
-      val color = tetrisBlockToColor(tetrisColor)
+    def drawCell(area: Rectangle, color: Color): Unit = {
       setFillColor(color)
       drawRectangle(area)
     }
@@ -105,6 +104,17 @@ class Chip8Game extends GameBase {
   def updateState(): Unit = {
     if (updateTimer.timeForNextFrame()) {
       updateTimer.advanceFrame()
+    }
+  }
+
+  def getColorScheme(schemeName: String): Map[String, Color] = {
+    schemeName match {
+      case "Default" => Map("Empty" -> Color.Black, "Filled" -> Color.White)
+      case "Reverse" => Map("Empty" -> Color.White, "Filled" -> Color.Black)
+      case "Sky" => Map("Empty" -> Color.LightBlue, "Filled" -> Color.DarkBlue)
+      case "Forest" => Map("Empty" -> Color.Green, "Filled" -> Color.Brown)
+      case "Desert" => Map("Empty" -> Color.SandyBrown, "Filled" -> Color.DarkRed)
+      case _ => Map("Empty" -> Color.Black, "Filled" -> Color.White) // default
     }
   }
 

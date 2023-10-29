@@ -1,10 +1,12 @@
 package chip8.logic
+import engine.graphics.Color
+
 import java.nio.file.{Files, Paths}
 import scala.collection.mutable
 
-class Chip8Logic(val gridDims : Dimensions) {
-
+class Chip8Logic(val gridDims : Dimensions, val colorScheme: Map[String, Color]) {
   private val screen = Array.ofDim[Boolean](gridDims.height, gridDims.width)
+
   def resetScreen(): Unit = {
     for {
       y <- 0 until gridDims.height
@@ -15,10 +17,8 @@ class Chip8Logic(val gridDims : Dimensions) {
   }
 
   object AddressStack {
-    // Define the stack
     private val stack = mutable.Stack[Int]()
 
-    // Push a 16-bit address onto the stack
     def push(address: Int): Unit = {
       if (address >= 0x0000 && address <= 0xFFFF) {
         stack.push(address)
@@ -27,7 +27,6 @@ class Chip8Logic(val gridDims : Dimensions) {
       }
     }
 
-    // Pop a 16-bit address from the stack
     def pop(): Int = {
       if (stack.isEmpty) {
         throw new NoSuchElementException("Stack is empty!")
@@ -35,18 +34,6 @@ class Chip8Logic(val gridDims : Dimensions) {
         stack.pop()
       }
     }
-
-    // Peek the top of the stack without removing it
-    def peek(): Int = {
-      if (stack.isEmpty) {
-        throw new NoSuchElementException("Stack is empty!")
-      } else {
-        stack.top
-      }
-    }
-
-    // Check if the stack is empty
-    def isEmpty: Boolean = stack.isEmpty
   }
 
   val memory = new Array[Char](4096)
@@ -288,9 +275,9 @@ class Chip8Logic(val gridDims : Dimensions) {
       case None => println(s"$key not found")
     }
   }
-  def getCellType(p : Point): CellType = {
-    if(screen(p.y)(p.x)) return OCell
-    Empty
+  def getCellType(p : Point): Color = {
+    if(screen(p.y)(p.x)) return colorScheme("Filled")
+    colorScheme("Empty")
   }
 }
 
@@ -301,5 +288,5 @@ object Chip8Logic {
   val DefaultWidth: Int = 64
   val DefaultHeight: Int = 32
   val DefaultDims : Dimensions = Dimensions(width = DefaultWidth, height = DefaultHeight)
-  def apply() = new Chip8Logic(DefaultDims)
+  def apply(colorScheme: Map[String, Color]) = new Chip8Logic(DefaultDims, colorScheme)
 }
