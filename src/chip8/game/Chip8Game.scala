@@ -66,7 +66,7 @@ class Chip8Game extends GameBase {
     val heightPerCell = screenArea.height / gridDims.height
 
     for (p <- gridDims.allPointsInside) {
-      drawCell(getCell(p), gameLogic.getCellType(p))
+      drawCell(getCell(p), gameLogic.getCellColor(p))
     }
 
     def getCell(p: GridPoint): Rectangle = {
@@ -117,18 +117,6 @@ class Chip8Game extends GameBase {
       case _ => Map("Empty" -> Color.Black, "Filled" -> Color.White) // default
     }
   }
-
-  def tetrisBlockToColor(color: CellType): Color =
-    color match {
-      case ICell => Color.LightBlue
-      case OCell => Color.White
-      case LCell => Color.Orange
-      case JCell => Color.Blue
-      case SCell => Color.Green
-      case Empty => Color.Black
-      case TCell => Color.Purple
-      case ZCell => Color.Red
-    }
 }
 
 object Chip8Game {

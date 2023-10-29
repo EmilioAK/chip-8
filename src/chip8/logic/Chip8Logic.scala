@@ -275,7 +275,7 @@ class Chip8Logic(val gridDims : Dimensions, val colorScheme: Map[String, Color])
       case None => println(s"$key not found")
     }
   }
-  def getCellType(p : Point): Color = {
+  def getCellColor(p : Point): Color = {
     if(screen(p.y)(p.x)) return colorScheme("Filled")
     colorScheme("Empty")
   }
