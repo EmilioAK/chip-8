@@ -1,16 +1,16 @@
-package chip8.game
+package chip8.emulator
 
 import engine.GameBase
 import engine.graphics.{Color, Point, Rectangle}
 import processing.core.PApplet
 import processing.event.KeyEvent
 import chip8.logic._
-import chip8.game.Chip8Game._
+import chip8.emulator.Chip8Emulator._
 import chip8.logic.{Point => GridPoint}
 import ddf.minim._
 import scala.collection.mutable
 
-class Chip8Game extends GameBase {
+class Chip8Emulator extends GameBase {
 
   //YOUR PREFERED COLORSCHEME AND GAME HERE
   private val gameLogic: Chip8Logic = Chip8Logic(getColorScheme("Default"), "[PATH/TO/YOUR/ROM]")
@@ -120,11 +120,11 @@ class Chip8Game extends GameBase {
   }
 }
 
-object Chip8Game {
+object Chip8Emulator {
   private val WidthCellInPixels: Double = 15 * Chip8Logic.DrawSizeFactor
   private val HeightCellInPixels: Double = WidthCellInPixels
 
   def main(args: Array[String]): Unit = {
-    PApplet.main("chip8.game.Chip8Game")
+    PApplet.main("chip8.emulator.Chip8Emulator")
   }
 }
