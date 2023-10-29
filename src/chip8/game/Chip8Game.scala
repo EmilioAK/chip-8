@@ -5,15 +5,15 @@ import engine.graphics.{Color, Point, Rectangle}
 import processing.core.PApplet
 import processing.event.KeyEvent
 import chip8.logic._
-import chip8.game.TetrisGame._
+import chip8.game.Chip8Game._
 import chip8.logic.{Point => GridPoint}
 import ddf.minim._
 import scala.collection.mutable
 
-class TetrisGame extends GameBase {
+class Chip8Game extends GameBase {
 
-  var gameLogic: TetrisLogic = TetrisLogic()
-  val updateTimer = new UpdateTimer(TetrisLogic.FramesPerSecond.toFloat)
+  var gameLogic: Chip8Logic = Chip8Logic()
+  val updateTimer = new UpdateTimer(Chip8Logic.FramesPerSecond.toFloat)
   val gridDims: Dimensions = gameLogic.gridDims
   val widthInPixels: Int = (WidthCellInPixels * gridDims.width).ceil.toInt
   val heightInPixels: Int = (HeightCellInPixels * gridDims.height).ceil.toInt
@@ -50,7 +50,7 @@ class TetrisGame extends GameBase {
       if (timers(timer) > 0) timers(timer) = (timers(timer) - 1).toChar
     }
 
-    for (_ <- 0 until TetrisLogic.ClockSpeed / TetrisLogic.FramesPerSecond) {
+    for (_ <- 0 until Chip8Logic.ClockSpeed / Chip8Logic.FramesPerSecond) {
       if (delayDisplay && drawInstructionExecuted) return
 
       val (newTimers, newDrawInstructionExecuted) = gameLogic.step(timers)
@@ -121,12 +121,12 @@ class TetrisGame extends GameBase {
     }
 }
 
-object TetrisGame {
-  val WidthCellInPixels: Double = 15 * TetrisLogic.DrawSizeFactor
+object Chip8Game {
+  val WidthCellInPixels: Double = 15 * Chip8Logic.DrawSizeFactor
   val HeightCellInPixels: Double = WidthCellInPixels
 
   def main(args: Array[String]): Unit = {
-    PApplet.main("chip8.game.TetrisGame")
+    PApplet.main("chip8.game.Chip8Game")
   }
 
 }

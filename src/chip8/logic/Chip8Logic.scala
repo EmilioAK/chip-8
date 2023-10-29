@@ -2,7 +2,7 @@ package chip8.logic
 import java.nio.file.{Files, Paths}
 import scala.collection.mutable
 
-class TetrisLogic(val gridDims : Dimensions) {
+class Chip8Logic(val gridDims : Dimensions) {
 
   private val screen = Array.ofDim[Boolean](gridDims.height, gridDims.width)
   def resetScreen(): Unit = {
@@ -294,12 +294,12 @@ class TetrisLogic(val gridDims : Dimensions) {
   }
 }
 
-object TetrisLogic {
+object Chip8Logic {
   val ClockSpeed: Int = 700
   val FramesPerSecond: Int = 60
   val DrawSizeFactor = 1.0
   val DefaultWidth: Int = 64
   val DefaultHeight: Int = 32
   val DefaultDims : Dimensions = Dimensions(width = DefaultWidth, height = DefaultHeight)
-  def apply() = new TetrisLogic(DefaultDims)
+  def apply() = new Chip8Logic(DefaultDims)
 }
