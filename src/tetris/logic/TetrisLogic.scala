@@ -1,32 +1,8 @@
 package tetris.logic
-
-import engine.random.{RandomGenerator, ScalaRandomGen}
-import tetris.logic.TetrisLogic._
-
 import java.nio.file.{Files, Paths}
 import scala.collection.mutable
-import scala.collection.mutable.Stack
-import scala.util.control.Breaks.break
-import scala.concurrent.duration._
-import processing.event.KeyEvent
 
-
-
-/** To implement Tetris, complete the ``TODOs`` below.
- *
- * If you need additional files,
- * please also put them in the ``tetris`` package.
- */
-class TetrisLogic(val randomGen: RandomGenerator,
-                  val gridDims : Dimensions,
-                  val initialBoard: Seq[Seq[CellType]]) {
-
-
-  def this(random: RandomGenerator, gridDims : Dimensions) =
-    this(random, gridDims, makeEmptyBoard(gridDims))
-
-  def this() =
-    this(new ScalaRandomGen(), DefaultDims, makeEmptyBoard(DefaultDims))
+class TetrisLogic(val gridDims : Dimensions) {
 
   private val screen = Array.ofDim[Boolean](gridDims.height, gridDims.width)
   def resetScreen(): Unit = {
@@ -312,12 +288,6 @@ class TetrisLogic(val randomGen: RandomGenerator,
       case None => println(s"$key not found")
     }
   }
-
-
-  // TODO implement me
-  def isGameOver: Boolean = false
-
-  // TODO implement me
   def getCellType(p : Point): CellType = {
     if(screen(p.y)(p.x)) return OCell
     Empty
@@ -326,41 +296,10 @@ class TetrisLogic(val randomGen: RandomGenerator,
 
 object TetrisLogic {
   val ClockSpeed: Int = 700
-
-  val FramesPerSecond: Int = 60 // change this to speed up or slow down the game
-
-  val DrawSizeFactor = 1.0 // increase this to make the game bigger (for high-res screens)
-  // or decrease to make game smaller
-
-
-
-  def makeEmptyBoard(gridDims : Dimensions): Seq[Seq[CellType]] = {
-    val emptyLine = Seq.fill(gridDims.width)(Empty)
-    Seq.fill(gridDims.height)(emptyLine)
-  }
-
-
-  // These are the dimensions used when playing the game.
-  // When testing the game, other dimensions are passed to
-  // the constructor of GameLogic.
-  //
-  // DO NOT USE the variable DefaultGridDims in your code!
-  //
-  // Doing so will cause tests which have different dimensions to FAIL!
-  //
-  // In your code only use gridDims.width and gridDims.height
-  // do NOT use DefaultDims.width and DefaultDims.height
-
-
+  val FramesPerSecond: Int = 60
+  val DrawSizeFactor = 1.0
   val DefaultWidth: Int = 64
-  val NrTopInvisibleLines: Int = 0
-  val DefaultVisibleHeight: Int = 32
-  val DefaultHeight: Int = DefaultVisibleHeight + NrTopInvisibleLines
+  val DefaultHeight: Int = 32
   val DefaultDims : Dimensions = Dimensions(width = DefaultWidth, height = DefaultHeight)
-
-
-  def apply() = new TetrisLogic(new ScalaRandomGen(),
-    DefaultDims,
-    makeEmptyBoard(DefaultDims))
-
+  def apply() = new TetrisLogic(DefaultDims)
 }
