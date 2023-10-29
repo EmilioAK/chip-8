@@ -12,16 +12,16 @@ import scala.collection.mutable
 
 class Chip8Game extends GameBase {
 
-  var gameLogic: Chip8Logic = Chip8Logic(getColorScheme("Desert"), "src/chip8/logic/BRIX")
-  val updateTimer = new UpdateTimer(Chip8Logic.FramesPerSecond.toFloat)
+  private val gameLogic: Chip8Logic = Chip8Logic(getColorScheme("Desert"), "src/chip8/logic/BRIX")
+  private val updateTimer = new UpdateTimer(Chip8Logic.FramesPerSecond.toFloat)
   val gridDims: Dimensions = gameLogic.gridDims
-  val widthInPixels: Int = (WidthCellInPixels * gridDims.width).ceil.toInt
-  val heightInPixels: Int = (HeightCellInPixels * gridDims.height).ceil.toInt
-  val screenArea: Rectangle = Rectangle(Point(0, 0), widthInPixels.toFloat, heightInPixels.toFloat)
+  private val widthInPixels: Int = (WidthCellInPixels * gridDims.width).ceil.toInt
+  private val heightInPixels: Int = (HeightCellInPixels * gridDims.height).ceil.toInt
+  private val screenArea: Rectangle = Rectangle(Point(0, 0), widthInPixels.toFloat, heightInPixels.toFloat)
   var timers: mutable.Map[String, Char] = mutable.Map[String, Char]("delayTimer" -> 0, "soundTimer" -> 0)
-  val delayDisplay: Boolean = false
-  val minim: Minim = new Minim(this)
-  var audioPlayer: AudioPlayer = _
+  private val delayDisplay: Boolean = false
+  private val minim: Minim = new Minim(this)
+  private var audioPlayer: AudioPlayer = _
 
   override def draw(): Unit = {
     updateState()
@@ -30,13 +30,13 @@ class Chip8Game extends GameBase {
     handleSound()
   }
 
-  def setupAudio(soundFile: String): Unit = {
+  private def setupAudio(soundFile: String): Unit = {
     audioPlayer = minim.loadFile(soundFile)
     audioPlayer.loop()
     audioPlayer.mute()
   }
 
-  def handleSound(): Unit = {
+  private def handleSound(): Unit = {
     if (timers("soundTimer") > 0) {
       audioPlayer.unmute()
     } else {
@@ -44,7 +44,7 @@ class Chip8Game extends GameBase {
     }
   }
 
-  def runStep(): Unit = {
+  private def runStep(): Unit = {
     var drawInstructionExecuted: Boolean = false
     timers.keys.foreach { timer =>
       if (timers(timer) > 0) timers(timer) = (timers(timer) - 1).toChar
@@ -61,7 +61,7 @@ class Chip8Game extends GameBase {
   }
 
 
-  def drawGrid(): Unit = {
+  private def drawGrid(): Unit = {
     val widthPerCell = screenArea.width / gridDims.width
     val heightPerCell = screenArea.height / gridDims.height
 
@@ -101,13 +101,13 @@ class Chip8Game extends GameBase {
     setupAudio("src/chip8/logic/beep.wav")
   }
 
-  def updateState(): Unit = {
+  private def updateState(): Unit = {
     if (updateTimer.timeForNextFrame()) {
       updateTimer.advanceFrame()
     }
   }
 
-  def getColorScheme(schemeName: String): Map[String, Color] = {
+  private def getColorScheme(schemeName: String): Map[String, Color] = {
     schemeName match {
       case "Default" => Map("Empty" -> Color.Black, "Filled" -> Color.White)
       case "Reverse" => Map("Empty" -> Color.White, "Filled" -> Color.Black)
@@ -120,8 +120,8 @@ class Chip8Game extends GameBase {
 }
 
 object Chip8Game {
-  val WidthCellInPixels: Double = 15 * Chip8Logic.DrawSizeFactor
-  val HeightCellInPixels: Double = WidthCellInPixels
+  private val WidthCellInPixels: Double = 15 * Chip8Logic.DrawSizeFactor
+  private val HeightCellInPixels: Double = WidthCellInPixels
 
   def main(args: Array[String]): Unit = {
     PApplet.main("chip8.game.Chip8Game")

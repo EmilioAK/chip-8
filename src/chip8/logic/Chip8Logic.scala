@@ -49,12 +49,11 @@ class Chip8Logic(val gridDims : Dimensions, val colorScheme: Map[String, Color],
       val secondToFourthNibble = instruction & 0x0FFF
 
       firstNibble match {
-        case 0x0 => {
+        case 0x0 =>
           secondToFourthNibble match {
             case 0x0E0 => resetScreen()
             case 0x0EE => programCounter = AddressStack.pop()
           }
-        }
         case 0x1 => programCounter = secondToFourthNibble
         case 0x2 =>
           AddressStack.push(programCounter)
@@ -230,7 +229,7 @@ class Chip8Logic(val gridDims : Dimensions, val colorScheme: Map[String, Color],
     colorScheme("Empty")
   }
 
-  def setupMemory(): Unit = {
+  private def setupMemory(): Unit = {
     val font: Array[Char] = {
       val zero: Array[Int] = Array(0xF0, 0x90, 0x90, 0x90, 0xF0)
       val one: Array[Int] = Array(0x20, 0x60, 0x20, 0x20, 0x70)
@@ -265,8 +264,8 @@ object Chip8Logic {
   val ClockSpeed: Int = 700
   val FramesPerSecond: Int = 60
   val DrawSizeFactor = 1.0
-  val DefaultWidth: Int = 64
-  val DefaultHeight: Int = 32
-  val DefaultDims : Dimensions = Dimensions(width = DefaultWidth, height = DefaultHeight)
+  private val DefaultWidth: Int = 64
+  private val DefaultHeight: Int = 32
+  private val DefaultDims : Dimensions = Dimensions(width = DefaultWidth, height = DefaultHeight)
   def apply(colorScheme: Map[String, Color], programPath: String) = new Chip8Logic(DefaultDims, colorScheme, programPath)
 }
