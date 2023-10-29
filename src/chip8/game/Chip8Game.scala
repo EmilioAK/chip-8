@@ -128,5 +128,4 @@ object Chip8Game {
   def main(args: Array[String]): Unit = {
     PApplet.main("chip8.game.Chip8Game")
   }
-
 }
