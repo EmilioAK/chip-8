@@ -1,19 +1,13 @@
-// DO NOT MODIFY FOR BASIC SUBMISSION
-// scalastyle:off
-
 package tetris.game
 
-import java.awt.event
-import java.awt.event.KeyEvent._
 import engine.GameBase
 import engine.graphics.{Color, Point, Rectangle}
-import processing.core.{PApplet, PConstants}
+import processing.core.PApplet
 import processing.event.KeyEvent
 import tetris.logic._
 import tetris.game.TetrisGame._
 import tetris.logic.{Point => GridPoint}
 import ddf.minim._
-
 import scala.collection.mutable
 
 class TetrisGame extends GameBase {
@@ -24,9 +18,9 @@ class TetrisGame extends GameBase {
   val widthInPixels: Int = (WidthCellInPixels * gridDims.width).ceil.toInt
   val heightInPixels: Int = (HeightCellInPixels * gridDims.height).ceil.toInt
   val screenArea: Rectangle = Rectangle(Point(0, 0), widthInPixels.toFloat, heightInPixels.toFloat)
-  var timers = mutable.Map[String, Char]("delayTimer" -> 0, "soundTimer" -> 0)
+  var timers: mutable.Map[String, Char] = mutable.Map[String, Char]("delayTimer" -> 0, "soundTimer" -> 0)
   val delayDisplay: Boolean = false
-  var minim: Minim = _
+  val minim: Minim = new Minim(this)
   var audioPlayer: AudioPlayer = _
 
   override def draw(): Unit = {
@@ -34,11 +28,9 @@ class TetrisGame extends GameBase {
     runStep()
     drawGrid()
     handleSound()
-    if (gameLogic.isGameOver) drawGameOverScreen()
   }
 
   def setupAudio(soundFile: String): Unit = {
-    minim = new Minim(this)
     audioPlayer = minim.loadFile(soundFile)
     audioPlayer.loop()
     audioPlayer.mute()
@@ -58,8 +50,8 @@ class TetrisGame extends GameBase {
       if (timers(timer) > 0) timers(timer) = (timers(timer) - 1).toChar
     }
 
-    for (i <- 0 until TetrisLogic.ClockSpeed / TetrisLogic.FramesPerSecond) {
-      if (drawInstructionExecuted && delayDisplay) return
+    for (_ <- 0 until TetrisLogic.ClockSpeed / TetrisLogic.FramesPerSecond) {
+      if (delayDisplay && drawInstructionExecuted) return
 
       val (newTimers, newDrawInstructionExecuted) = gameLogic.step(timers)
       timers = newTimers
@@ -68,13 +60,8 @@ class TetrisGame extends GameBase {
     }
   }
 
-  def drawGameOverScreen(): Unit = {
-    setFillColor(Color.Red)
-    drawTextCentered("GAME OVER!", 20, screenArea.center)
-  }
 
   def drawGrid(): Unit = {
-
     val widthPerCell = screenArea.width / gridDims.width
     val heightPerCell = screenArea.height / gridDims.height
 
@@ -96,12 +83,6 @@ class TetrisGame extends GameBase {
 
   }
 
-  /** Method that calls handlers for different key press events.
-   * You may add extra functionality for other keys here.
-   * See [[event.KeyEvent]] for all defined keycodes.
-   *
-   * @param event The key press event to handle
-   */
   override def keyPressed(event: KeyEvent): Unit = {
     gameLogic.keyPressed(event.getKeyCode)
   }
@@ -117,13 +98,6 @@ class TetrisGame extends GameBase {
   }
 
   override def setup(): Unit = {
-    // Fonts are loaded lazily, so when we call text()
-    // for the first time, there is significant lag.
-    // This prevents it from happening during gameplay.
-    text("", 0, 0)
-
-    // This should be called last, since the game
-    // clock is officially ticking at this point
     updateTimer.init()
     setupAudio("src/tetris/logic/beep.wav")
   }
@@ -148,8 +122,6 @@ class TetrisGame extends GameBase {
 }
 
 object TetrisGame {
-
-
   val WidthCellInPixels: Double = 15 * TetrisLogic.DrawSizeFactor
   val HeightCellInPixels: Double = WidthCellInPixels
 
