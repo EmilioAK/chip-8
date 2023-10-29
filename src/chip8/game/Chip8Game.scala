@@ -13,9 +13,9 @@ import scala.collection.mutable
 class Chip8Game extends GameBase {
 
   //YOUR PREFERED COLORSCHEME AND GAME HERE
-  private val gameLogic: Chip8Logic = Chip8Logic(getColorScheme("Default"), "games/BRIX")
+  private val gameLogic: Chip8Logic = Chip8Logic(getColorScheme("Default"), "[PATH/TO/YOUR/ROM]")
   //Enable this if you need compatibility with older CHIP-8 games
-  private val delayDisplay: Boolean = true
+  private val delayDisplay: Boolean = false
 
   private val updateTimer = new UpdateTimer(Chip8Logic.FramesPerSecond.toFloat)
   val gridDims: Dimensions = gameLogic.gridDims
