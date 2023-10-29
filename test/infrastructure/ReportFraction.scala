@@ -5,7 +5,7 @@ import java.io.{OutputStream, PrintStream}
 
 import org.scalatest.{Args, ConfigMap, Reporter, Suites}
 import org.scalatest.events.{Event, TestFailed, TestSucceeded}
-import tetris.{TetrisTestSuite3_1, TetrisTestSuite3_2, TetrisTestSuitesBase}
+import chip8.{TetrisTestSuite3_1, TetrisTestSuite3_2, TetrisTestSuitesBase}
 
 class CustomReporter(val out : PrintStream) extends Reporter {
   override def apply(event: Event): Unit = {

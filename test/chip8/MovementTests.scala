@@ -1,4 +1,4 @@
-package tetris
+package chip8
 
 class MovementTests extends TetrisTestSuiteBase {
 

@@ -1,4 +1,4 @@
-package tetris
+package chip8
 
 class FullGameTests extends TetrisTestSuiteBase {
 

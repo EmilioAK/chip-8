@@ -1,4 +1,4 @@
-package tetris
+package chip8
 
 import infrastructure.ScoreCounter
 import org.junit.runner.RunWith

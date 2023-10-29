@@ -1,11 +1,11 @@
 // DO NOT MODIFY FOR BASIC SUBMISSION
 // scalastyle:off
 
-package tetris
+package chip8
 
 import engine.random.RandomGenerator
 import generic.{CellTypeInterface, GameLogicInterface, GameTestSuite}
-import tetris.logic.{CellType, Dimensions, Empty, ICell, JCell, LCell, OCell, Point, SCell, TCell, TetrisLogic, ZCell}
+import chip8.logic.{CellType, Dimensions, Empty, ICell, JCell, LCell, OCell, Point, SCell, TCell, TetrisLogic, ZCell}
 
 sealed abstract class TetrisAction
 case object RotateLeft    extends TetrisAction

@@ -1,4 +1,4 @@
-package tetris.logic
+package chip8.logic
 import java.nio.file.{Files, Paths}
 import scala.collection.mutable
 
@@ -85,7 +85,7 @@ class TetrisLogic(val gridDims : Dimensions) {
   var indexRegister = 0
   var keysPressed = mutable.Queue[Char]()
 
-  loadProgramIntoMemory("src/tetris/logic/BRIX")
+  loadProgramIntoMemory("src/chip8/logic/BRIX")
 
   def fetch(): Int = {
     val instruction = ((memory(programCounter).toInt & 0xFF) << 8) | (memory(programCounter + 1).toInt & 0xFF)

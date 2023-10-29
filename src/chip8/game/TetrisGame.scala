@@ -1,12 +1,12 @@
-package tetris.game
+package chip8.game
 
 import engine.GameBase
 import engine.graphics.{Color, Point, Rectangle}
 import processing.core.PApplet
 import processing.event.KeyEvent
-import tetris.logic._
-import tetris.game.TetrisGame._
-import tetris.logic.{Point => GridPoint}
+import chip8.logic._
+import chip8.game.TetrisGame._
+import chip8.logic.{Point => GridPoint}
 import ddf.minim._
 import scala.collection.mutable
 
@@ -99,7 +99,7 @@ class TetrisGame extends GameBase {
 
   override def setup(): Unit = {
     updateTimer.init()
-    setupAudio("src/tetris/logic/beep.wav")
+    setupAudio("src/chip8/logic/beep.wav")
   }
 
   def updateState(): Unit = {
@@ -126,7 +126,7 @@ object TetrisGame {
   val HeightCellInPixels: Double = WidthCellInPixels
 
   def main(args: Array[String]): Unit = {
-    PApplet.main("tetris.game.TetrisGame")
+    PApplet.main("chip8.game.TetrisGame")
   }
 
 }
