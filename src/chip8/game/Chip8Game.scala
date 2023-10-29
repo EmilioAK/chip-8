@@ -12,8 +12,9 @@ import scala.collection.mutable
 
 class Chip8Game extends GameBase {
 
-  //YOUR PREFERD COLORSCHEME AND GAME HERE
-  private val gameLogic: Chip8Logic = Chip8Logic(getColorScheme("Default"), "[PATH-TO-ROM]")
+  //YOUR PREFERED COLORSCHEME AND GAME HERE
+  private val gameLogic: Chip8Logic = Chip8Logic(getColorScheme("Default"), "games/BRIX")
+  //Enable this if you need compatibility with older CHIP-8 games
   private val delayDisplay: Boolean = true
 
   private val updateTimer = new UpdateTimer(Chip8Logic.FramesPerSecond.toFloat)
@@ -32,20 +33,6 @@ class Chip8Game extends GameBase {
     handleSound()
   }
 
-  private def setupAudio(soundFile: String): Unit = {
-    audioPlayer = minim.loadFile(soundFile)
-    audioPlayer.loop()
-    audioPlayer.mute()
-  }
-
-  private def handleSound(): Unit = {
-    if (timers("soundTimer") > 0) {
-      audioPlayer.unmute()
-    } else {
-      audioPlayer.mute()
-    }
-  }
-
   private def runStep(): Unit = {
     var drawInstructionExecuted: Boolean = false
     timers.keys.foreach { timer =>
@@ -58,7 +45,6 @@ class Chip8Game extends GameBase {
       val (newTimers, newDrawInstructionExecuted) = gameLogic.step(timers)
       timers = newTimers
       drawInstructionExecuted = newDrawInstructionExecuted
-
     }
   }
 
@@ -81,7 +67,6 @@ class Chip8Game extends GameBase {
       setFillColor(color)
       drawRectangle(area)
     }
-
   }
 
   override def keyPressed(event: KeyEvent): Unit = {
@@ -94,13 +79,26 @@ class Chip8Game extends GameBase {
 
   override def settings(): Unit = {
     pixelDensity(displayDensity())
-    // If line below gives errors try size(widthInPixels, heightInPixels, PConstants.P2D)
     size(widthInPixels, heightInPixels)
+  }
+
+  private def setupAudio(): Unit = {
+    audioPlayer = minim.loadFile("resources/beep.wav")
+    audioPlayer.loop()
+    audioPlayer.mute()
+  }
+
+  private def handleSound(): Unit = {
+    if (timers("soundTimer") > 0) {
+      audioPlayer.unmute()
+    } else {
+      audioPlayer.mute()
+    }
   }
 
   override def setup(): Unit = {
     updateTimer.init()
-    setupAudio("resources/beep.wav")
+    setupAudio()
     noStroke()
   }
 
