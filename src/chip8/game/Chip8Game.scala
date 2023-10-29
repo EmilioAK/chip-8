@@ -13,7 +13,8 @@ import scala.collection.mutable
 class Chip8Game extends GameBase {
 
   //YOUR PREFERD COLORSCHEME AND GAME HERE
-  private val gameLogic: Chip8Logic = Chip8Logic(getColorScheme("Desert"), "resources/BRIX")
+  private val gameLogic: Chip8Logic = Chip8Logic(getColorScheme("Default"), "[PATH-TO-ROM]")
+  private val delayDisplay: Boolean = true
 
   private val updateTimer = new UpdateTimer(Chip8Logic.FramesPerSecond.toFloat)
   val gridDims: Dimensions = gameLogic.gridDims
@@ -21,7 +22,6 @@ class Chip8Game extends GameBase {
   private val heightInPixels: Int = (HeightCellInPixels * gridDims.height).ceil.toInt
   private val screenArea: Rectangle = Rectangle(Point(0, 0), widthInPixels.toFloat, heightInPixels.toFloat)
   var timers: mutable.Map[String, Char] = mutable.Map[String, Char]("delayTimer" -> 0, "soundTimer" -> 0)
-  private val delayDisplay: Boolean = false
   private val minim: Minim = new Minim(this)
   private var audioPlayer: AudioPlayer = _
 
@@ -101,6 +101,7 @@ class Chip8Game extends GameBase {
   override def setup(): Unit = {
     updateTimer.init()
     setupAudio("resources/beep.wav")
+    noStroke()
   }
 
   private def updateState(): Unit = {

@@ -5,33 +5,13 @@ import java.nio.file.{Files, Paths}
 import scala.collection.mutable
 
 class Chip8Logic(val gridDims : Dimensions, val colorScheme: Map[String, Color], val programPath: String) {
-  private object AddressStack {
-    private val stack = mutable.Stack[Int]()
-
-    def push(address: Int): Unit = {
-      if (address >= 0x0000 && address <= 0xFFFF) {
-        stack.push(address)
-      } else {
-        throw new IllegalArgumentException("Invalid 16-bit address!")
-      }
-    }
-
-    def pop(): Int = {
-      if (stack.isEmpty) {
-        throw new NoSuchElementException("Stack is empty!")
-      } else {
-        stack.pop()
-      }
-    }
-  }
-
   private val screen = Array.ofDim[Boolean](gridDims.height, gridDims.width)
   private val memory = new Array[Char](4096)
   private val registers: Array[Char] = new Array[Char](16)
   private var programCounter = 512
   private var indexRegister = 0
   private var keysPressed: mutable.Queue[Char] = mutable.Queue[Char]()
-  setupMemory()
+  initializeMemory()
 
   private def fetch(): Int = {
     val instruction = ((memory(programCounter).toInt & 0xFF) << 8) | (memory(programCounter + 1).toInt & 0xFF)
@@ -229,7 +209,7 @@ class Chip8Logic(val gridDims : Dimensions, val colorScheme: Map[String, Color],
     colorScheme("Empty")
   }
 
-  private def setupMemory(): Unit = {
+  private def initializeMemory(): Unit = {
     val font: Array[Char] = {
       val zero: Array[Int] = Array(0xF0, 0x90, 0x90, 0x90, 0xF0)
       val one: Array[Int] = Array(0x20, 0x60, 0x20, 0x20, 0x70)
@@ -258,6 +238,27 @@ class Chip8Logic(val gridDims : Dimensions, val colorScheme: Map[String, Color],
     Array.copy(font, 0, memory, 0x50, font.length)
     loadProgramIntoMemory(programPath)
   }
+
+  private object AddressStack {
+    private val stack = mutable.Stack[Int]()
+
+    def push(address: Int): Unit = {
+      if (address >= 0x0000 && address <= 0xFFFF) {
+        stack.push(address)
+      } else {
+        throw new IllegalArgumentException("Invalid 16-bit address!")
+      }
+    }
+
+    def pop(): Int = {
+      if (stack.isEmpty) {
+        throw new NoSuchElementException("Stack is empty!")
+      } else {
+        stack.pop()
+      }
+    }
+  }
+
 }
 
 object Chip8Logic {
