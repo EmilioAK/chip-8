@@ -12,7 +12,7 @@ import scala.collection.mutable
 
 class Chip8Game extends GameBase {
 
-  var gameLogic: Chip8Logic = Chip8Logic(getColorScheme("Desert"))
+  var gameLogic: Chip8Logic = Chip8Logic(getColorScheme("Desert"), "src/chip8/logic/BRIX")
   val updateTimer = new UpdateTimer(Chip8Logic.FramesPerSecond.toFloat)
   val gridDims: Dimensions = gameLogic.gridDims
   val widthInPixels: Int = (WidthCellInPixels * gridDims.width).ceil.toInt
