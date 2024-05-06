@@ -9,5 +9,5 @@ The emulator has been tested using [Timendus' Test suite](https://github.com/Tim
 If you want compatibility with older CHIP-8 titles you can set `delayDisplay` to true. 
 Beware that most modern games expect this option to be turned off as it makes them run slower.
 
-![Spacejam running](resources/Screenshot%202023-10-29%20at%2015.36.35.jpg)
-![Breakout running](resources/Screenshot%202023-10-29%20at%2015.30.26.png)
+https://github.com/EmilioAK/chip-8/assets/57467368/bd9ff6ed-856f-41fc-bb28-4864690ecd27
+
